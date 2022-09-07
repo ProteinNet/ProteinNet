@@ -22,4 +22,15 @@ The following will explain how to begin your project.
 
 ### Finetuning: DNA/ATP binding site prediction.
 Raw data for DNA/ATP binding site prediction is already provided through the github.<br>
-But their file format is not appropriate for machine learning - we should treat them as NLP field does.
+But their file format is not appropriate for machine learning - we should reformulate them as NLP field does.
+
+We would follow the convention of TAPE, which is the widely-used transformer architecture for proteins. [TAPE](https://github.com/songlab-cal/tape) <br>
+Please be friendly with TAPE, since this model will be the base architecture for our project. <br>
+We recommend you to carefully read TAPE paper before using it. [arXiv](https://arxiv.org/pdf/1906.08230.pdf)
+
+
+
+
+We are planning to build our downstream codes 'on top of' the TAPE finetuning codes; it might reduce our work on defending our framework.
+
+
