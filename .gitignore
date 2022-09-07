@@ -1,2 +1,3 @@
 data/pretrain/mane
 data/finetune/klifs
+*/__pycache__
