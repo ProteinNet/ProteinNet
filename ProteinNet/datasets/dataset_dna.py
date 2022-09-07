@@ -7,8 +7,8 @@ from torch.utils.data.sampler import SubsetRandomSampler
 from torch_geometric.data import Data, Dataset, DataLoader
 from tape import ProteinBertModel, TAPETokenizer
 
-class ProteinDataset(Dataset):
-    def __init__(self, pDataPath="../data/pretrain/mane", pTAPE=False):
+class DNABindDataset(Dataset):
+    def __init__(self, pDataPath="../data/finetune/dna", pTAPE=False):
         super(Dataset, self).__init__()
 
         self.pDataPath = pDataPath
@@ -60,7 +60,7 @@ class ProteinDataset(Dataset):
         return pd.read_csv(f"{self.pDataPath}/pdbs.csv", index_col=False).values.squeeze()   
 
 
-class ProteinDatasetWrapper(object):
+class DNABindDatasetWrapper(object):
     def __init__(self, batch_size, num_workers, valid_size, pDataPath, pTAPE):
         super(object, self).__init__()
         self.pDataPath = pDataPath
@@ -70,26 +70,16 @@ class ProteinDatasetWrapper(object):
         self.pTAPE = pTAPE
 
     def get_data_loaders(self):
-        train_dataset = ProteinDataset(pDataPath=self.pDataPath, pTAPE=self.pTAPE)
-        train_loader, valid_loader = self.get_train_validation_data_loaders(train_dataset)
-        return train_loader, valid_loader
+        train_dataset    = DNABindDataset(pDataSplit='train',    pDataPath=self.pDataPath, pTAPE=self.pTAPE)
+        test_129_dataset = DNABindDataset(pDataSplit='test_129', pDataPath=self.pDataPath, pTAPE=self.pTAPE)
+        test_181_dataset = DNABindDataset(pDataSplit='test_181', pDataPath=self.pDataPath, pTAPE=self.pTAPE)
+        
 
-    def get_train_validation_data_loaders(self, train_dataset):
-        # obtain training indices that will be used for validation
-        num_train = len(train_dataset)
-        indices = list(range(num_train))
-        np.random.shuffle(indices)
-
-        split = int(np.floor(self.valid_size * num_train))
-        train_idx, valid_idx = indices[split:], indices[:split]
-
-        # define samplers for obtaining training and validation batches
-        train_sampler = SubsetRandomSampler(train_idx)
-        valid_sampler = SubsetRandomSampler(valid_idx)
-
-        train_loader = DataLoader(train_dataset, batch_size=self.batch_size, sampler=train_sampler,
-                                  num_workers=self.num_workers, drop_last=True)
-        valid_loader = DataLoader(train_dataset, batch_size=self.batch_size, sampler=valid_sampler,
-                                  num_workers=self.num_workers, drop_last=True)
-
-        return train_loader, valid_loader
+        train_loader        = DataLoader(train_dataset, batch_size = self.batch_size,    sampler=SubsetRandomSampler(list(range(len(train_dataset)))), 
+                                    num_workers=self.num_workers, drop_last=True)
+        test_129_loader     = DataLoader(test_129_dataset, batch_size = self.batch_size, sampler=SubsetRandomSampler(list(range(len(test_129_dataset)))), 
+                                    num_workers=self.num_workers, drop_last=True)
+        test_181_loader     = DataLoader(test_181_dataset, batch_size = self.batch_size, sampler=SubsetRandomSampler(list(range(len(test_181_dataset)))), 
+                                    num_workers=self.num_workers, drop_last=True)
+        
+        return train_loader, test_129_loader, test_181_loader
