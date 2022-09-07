@@ -30,27 +30,58 @@ def PDB2graph(pPDBDir, pLevel):
         print(f"edge cannot be parsed: {pPDBDir}")
         return None
 
-    try:
-        # Get the covalent bond edges. Following the convention of ogb.
-        vCovBondAdj      = to_dense_adj(vRDKGraph.edge_index, edge_attr=vRDKGraph.edge_attr)
+    # When node level corresponds to the amino acid.
+    if pLevel == 'aa':
+        vNumAA = len(vODDTobj.residues)
+        vAtom2Res = []
+        for (i, residue) in enumerate(vODDTobj.residues):
+            for (j, atoms) in enumerate(residue):
+                vAtom2Res.append(i)
+        # Covalent bond edges are just sequential edges.
+        vCovEdgeIndex  = torch.cat((torch.cat((torch.arange(0, vNumAA-1, 1), torch.arange(1, vNumAA, 1)), dim=0).view(1, -1),
+                                    torch.cat((torch.arange(1, vNumAA, 1),   torch.arange(0, vNumAA-1, 1)), dim=0).view(1, -1)), 
+                                    dim=0)
+            # All covalent bonds between amino acids have [0,0,0,0,0].
+        vCovEdgeAttr = torch.zeros(vCovEdgeIndex.shape[1], 5)
+        
+        # Calculate the noncovalent bonds.
+        from util import fODDT2NonCovAdjAA
+        vNonCovBondAdj = fODDT2NonCovAdjAA(vODDTobj, vAtom2Res)
+        vNonCovEdgeIndex, vNonCovEdgeAttr_   = dense_to_sparse(vNonCovBondAdj)
+            # Prepare for merging cov-and noncov- bonds.
+        vNonCovEdgeAttr = torch.zeros(vNonCovEdgeAttr_.shape[0], 5) 
+        vNonCovEdgeAttr[:, 3:] = vNonCovEdgeAttr_
 
-        # Get the non-covalent bond edges.
-        from util import fODDT2NonCovAdjAtom
-        vNonCovBondAdj   = fODDT2NonCovAdjAtom(vODDTobj)
+        # Merge each indices and attributes.
+        vEdgeIndex = torch.zeros(2, vCovEdgeIndex.shape[1] + vNonCovEdgeIndex.shape[1])
+        vEdgeIndex[:, :vCovEdgeIndex.shape[1]] = vCovEdgeIndex
+        vEdgeIndex[:, vCovEdgeIndex.shape[1]:] = vNonCovEdgeIndex
+        vEdgeAttr  = torch.zeros(vCovEdgeAttr.shape[0] + vNonCovEdgeAttr.shape[0], 5)
+        vEdgeAttr[:vCovEdgeAttr.shape[0], :] = vCovEdgeAttr
+        vEdgeAttr[vCovEdgeAttr.shape[0]:, :] = vNonCovEdgeAttr
 
-        # Sometimes ODDT object has additional C at the last.
-        if len(vCovBondAdj[0]) != len(vNonCovBondAdj[0]): vNonCovBondAdj = vNonCovBondAdj[:, :-1, :-1]
+    elif pLevel == 'atom':
+        try:
+            # Get the covalent bond edges. Following the convention of ogb.
+            vCovBondAdj      = to_dense_adj(vRDKGraph.edge_index, edge_attr=vRDKGraph.edge_attr)
 
-        vBondAdj         = torch.concat([vCovBondAdj, vNonCovBondAdj], dim=-1)
-        vEdgeIndex, vEdgeAttr = dense_to_sparse(vBondAdj)
-        vProGraph = Data(x=vRDKGraph.x, edge_index=vEdgeIndex, edge_attr=vEdgeAttr.long())
-    except:
-        print(f"bond size does not match: {pPDBDir}")
-        return None
+            # Get the non-covalent bond edges.
+            from util import fODDT2NonCovAdjAtom
+            vNonCovBondAdj   = fODDT2NonCovAdjAtom(vODDTobj)
+
+            # Sometimes ODDT object has additional C at the last.
+            if len(vCovBondAdj[0]) != len(vNonCovBondAdj[0]): vNonCovBondAdj = vNonCovBondAdj[:, :-1, :-1]
+
+            vBondAdj         = torch.concat([vCovBondAdj, vNonCovBondAdj], dim=-1)
+            vEdgeIndex, vEdgeAttr = dense_to_sparse(vBondAdj)
+        except:
+            print(f"bond size does not match: {pPDBDir}")
+            return None
 
     # Get the AA sequence.
     from bio import IUPAC_CODES, IUPAC_VOCAB
     
+    vProGraph = Data(x=vRDKGraph.x, edge_index=vEdgeIndex, edge_attr=vEdgeAttr.long())
     sequence = []
     for res in vODDTobj.residues: 
         sequence.append(IUPAC_VOCAB[IUPAC_CODES[res.name.lower().capitalize()]])

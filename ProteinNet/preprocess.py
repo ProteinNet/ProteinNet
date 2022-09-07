@@ -17,7 +17,7 @@ from tqdm import tqdm
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Preprocess a bulk pdb structures.")
     parser.add_argument('--dataname',   type=str, help='the name of pretraining pdb dataset', default='mane')
-    parser.add_argument('--level',      type=str, help='the level of graph construction', default='atom')
+    parser.add_argument('--level',      type=str, help='the level of graph construction', default='aa')
     parser.add_argument('--process',    type=int, help='the number of subprocesses', default=8)
 
     args = parser.parse_args()

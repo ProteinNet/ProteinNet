@@ -23,6 +23,7 @@ allowable_features = {
         ],
     'possible_is_aromatic_list': [False, True],
     'possible_is_in_ring_list': [False, True],
+    
     'possible_bond_type_list' : [
         'SINGLE',
         'DOUBLE',
