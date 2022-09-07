@@ -6,6 +6,7 @@ Copyright (c) ProteinNet Team.
 Convert a single protein structure file (.pdb) to the pyg graph object.
 '''
 
+from typing import OrderedDict
 import numpy as np
 import torch
 import argparse
@@ -48,9 +49,11 @@ def PDB2graph(pPDBDir, pLevel):
         return None
 
     # Get the AA sequence.
-    from bio import residue_tChars
+    from bio import IUPAC_CODES, IUPAC_VOCAB
+    
     sequence = []
-    for res in vODDTobj.residues: sequence.append(residue_tChars.index(res.name.upper()))
+    for res in vODDTobj.residues: 
+        sequence.append(IUPAC_VOCAB[IUPAC_CODES[res.name.lower().capitalize()]])
     vProGraph.y = torch.tensor(sequence, dtype=torch.long)
     
     return vProGraph
