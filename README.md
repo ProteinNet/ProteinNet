@@ -20,7 +20,7 @@ The following will explain how to begin your project.
 3. Preprocessing PDB structures using our pretraining code. <br>
     ` # current dir: data/pretrain/mane`<br>
     `cd ../../../ProteinNet`<br>
-    `python preprocess.py --dataname mane --level atom --process 8`
+    `python preprocess.py --dataname mane --level aa --process 8`
 
 ### Pretraining: Swissprot
 1. Download the full entries of Swissprot dataset from [here](https://alphafold.ebi.ac.uk/download#swissprot-section). <br>
@@ -34,7 +34,7 @@ The following will explain how to begin your project.
 3. Preprocessing PDB structures using our preprocessing code. <br>
     ` # current dir: data/pretrain/mane`<br>
     `cd ../../../ProteinNet`<br>
-    `python preprocess.py --dataname swissprot --level atom --process 8`
+    `python preprocess.py --dataname swissprot --level aa --process 8`
 
 ### Finetuning: DNA/ATP binding site prediction.
 Raw data for DNA/ATP binding site prediction is already provided through the github.<br>
@@ -50,5 +50,8 @@ Currently DNA binding site prediction data is available by me; please contact me
 
 2. Rename the directory to 'raw'<br>
 
-3. Preprocessing PDB structures using our preprocessing code.<br>
-    
+3. Preprocessing PDB structures using our preprocessing code. <br>
+    ` # current dir: data/finetune/dna`<br>
+    `cd ../../../ProteinNet`<br>
+    `python preprocess.py --dataname dna --level aa --process 8`
+

@@ -61,9 +61,9 @@ class DNABindDataset(Dataset):
 
 
 class DNABindDatasetWrapper(object):
-    def __init__(self, batch_size, num_workers, valid_size, pDataPath, pTAPE):
+    def __init__(self, batch_size, num_workers, valid_size, data_path, pTAPE):
         super(object, self).__init__()
-        self.pDataPath = pDataPath
+        self.pDataPath = data_path
         self.batch_size = batch_size
         self.num_workers = num_workers
         self.valid_size = valid_size
