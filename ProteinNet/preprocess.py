@@ -5,6 +5,7 @@ Copyright (c) ProteinNet Team.
 
 Convert protein structure file (.pdb) to the pyg graph object.
 '''
+### This file is not clean, but works.. we will clean this later.
 
 # MANE: python preprocess.py --dataname mane --level atom --process 8
 
@@ -22,8 +23,10 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+
     # Define generic directories.
-    dirRoot = f"../data/pretrain/{args.dataname}"
+    if args.dataname in ['mane', 'swissprot']: dirRoot = f"../data/pretrain/{args.dataname}"
+    elif args.dataname in ['dna']: dirRoot = f"../data/finetune/{args.dataname}"
     dirStr  = f"{dirRoot}/raw"
     dirOut  = f"{dirRoot}/processed"
     os.makedirs(dirOut, exist_ok=True)
@@ -49,3 +52,37 @@ if __name__ == "__main__":
                 if len(processes) == args.process:
                     os.wait()
                     processes.difference_update([p for p in processes if p.poll() is not None])
+    
+    # elif args.dataname in ['dna', 'atp']: 
+    #     # Define generic directories.
+    #     dirRoot = f"../data/finetune/{args.dataname}"
+    #     _dirStr  = f"{dirRoot}/raw"
+    #     _dirOut  = f"{dirRoot}/processed"
+    #     os.makedirs(_dirOut, exist_ok=True)
+
+    #     if args.dataname == 'dna':
+    #         for dataSplit in ['train', 'test_129', 'test_181']:
+    #             dirStr = os.path.join(_dirStr, dataSplit)
+    #             dirOut = os.path.join(_dirOut, dataSplit)
+
+    #             processes = set()
+    #             for (root, dirs, files) in os.walk(dirStr):
+    #                 if len(files) > 0:
+    #                     print(f"[ProteinNet Preprocessing] Processing total {len(files)} files.")
+    #                     for (i, file_name) in enumerate(tqdm(files)):
+    #                         # not a pdb file
+    #                         if '.pdb' not in file_name: continue
+
+    #                         # Define specific directories.
+    #                         codePDB = file_name.split('.')[0]
+    #                         _dirStr = dirStr + '/' + codePDB + '.pdb'
+    #                         _dirOut = dirOut + '/' + codePDB + '.pt'
+                            
+    #                         # already preprocessed; skip this.
+    #                         if os.path.exists(_dirOut): continue
+
+    #                         # Multiprocessing
+    #                         processes.add(subprocess.Popen([f"python preprocess/main.py --dirstr {_dirStr} --dirout {_dirOut} --level {args.level}"], shell=True))
+    #                         if len(processes) == args.process:
+    #                             os.wait()
+    #                             processes.difference_update([p for p in processes if p.poll() is not None])

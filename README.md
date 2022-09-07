@@ -31,22 +31,24 @@ The following will explain how to begin your project.
 2. Place the dataset at data/pretrain/mane folder, then unzip, rename the directory as 'raw' <br>
     `tar -xvf swissprot_pdb_v3.tar raw`
 
-3. Preprocessing PDB structures using our pretraining code. <br>
+3. Preprocessing PDB structures using our preprocessing code. <br>
     ` # current dir: data/pretrain/mane`<br>
     `cd ../../../ProteinNet`<br>
     `python preprocess.py --dataname swissprot --level atom --process 8`
 
 ### Finetuning: DNA/ATP binding site prediction.
 Raw data for DNA/ATP binding site prediction is already provided through the github.<br>
-But their file format is not appropriate for machine learning - we should reformulate them as NLP field does.
+But their file format is not appropriate for our purpose - we should convert them into the structure (.pdb) files.
 
-We would follow the convention of TAPE, which is the widely-used transformer architecture for proteins. [TAPE](https://github.com/songlab-cal/tape) <br>
-Please be friendly with TAPE, since this model will be the base architecture for our project. <br>
-We recommend you to carefully read TAPE paper before using it. [arXiv](https://arxiv.org/pdf/1906.08230.pdf)
+Cause most of developers are not familer to AlphaFold2, I plan to run them instead.<br> 
+Currently DNA binding site prediction data is available by me; please contact me to download it.
 
+1. Place the entries of DNABind dataset.<br>
+    `mkdir data/finetune/dnabind`<br>
+    `cd data/finetune/dnabind`<br>
+    ` # Locate the data`
 
+2. Rename the directory to 'raw'<br>
 
-
-We are planning to build our downstream codes 'on top of' the TAPE finetuning codes; it might reduce our work on defending our framework.
-
-
+3. Preprocessing PDB structures using our preprocessing code.<br>
+    
