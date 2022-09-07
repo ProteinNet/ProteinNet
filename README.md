@@ -8,8 +8,13 @@ The following will explain how to begin your project.
 
 
 ## Data Download.
-### Pretraining MANE
+### Pretraining: MANE
 Download the full entries of MANE dataset from [here](https://alphafold.ebi.ac.uk/download#mane-section).
 Place the dataset at data/pretrain/mane folder, then unzip.
 
 Preprocessing PDB structures using our pretraining code.
+
+`
+cd ProteinNet
+python preprocess.py --dataname mane --level atom --process 8
+`
