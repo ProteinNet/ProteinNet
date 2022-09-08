@@ -35,6 +35,8 @@ class ProteinNet_finetune(object):
         return pDevice
 
     def _fGetGraphEncoder_(self, pGNNType, pGraphEncParam):
+        # You can deploy any kind of graph encoders for further performance improvement;
+        # Current implementation only includes GNNs, but Graphtransformers/GraphUNet will be the great starting point.
         if pGNNType == 'GCN':
             from models.GraphEncoder import GCNEnc
             mGraphEnc = GCNEnc(**pGraphEncParam)
@@ -87,9 +89,8 @@ class ProteinNet_finetune(object):
         pEmbConfig = self.pConfig['embed']
         pGraphConfig = self.pConfig['graph_encoder']
 
-        pGraphEmbParam = {"pDimNodeEmb": (pEmbConfig['num_nodes'] - 1) * pEmbConfig['num_shells'], "pDimEdgeEmb": pEmbConfig['num_edges'],
-                          "pDimNodeHidden": pGraphConfig['node_dim'], "pDimEdgeHidden": pGraphConfig['edge_dim']}
-        pGraphEncParam = {"pNumLayers": pGraphConfig['num_layers'], "pDim": pGraphConfig['node_dim'],
+        pGraphEmbParam = {"pDimNodeEmb": pEmbConfig['init_node_dim'], "pDimEdgeEmb": pEmbConfig['init_edge_dim']}
+        pGraphEncParam = {"pNumLayers": pGraphConfig['num_layers'], "pDim": pEmbConfig['init_node_dim'],
                           "pHDim": pGraphConfig['hidden_dim'], "pDropRatio": pGraphConfig['drop_ratio'], "pNumLabels":pNumLabels}
         from models.GraphEncoder import GraphEmb
         mGraphEmb = GraphEmb(**pGraphEmbParam)
@@ -98,10 +99,10 @@ class ProteinNet_finetune(object):
         # Import Pretrained Model
         pPretrainedModelDir = self.pConfig['finetune']['pretrained_model_dir']
         if pPretrainedModelDir == "None":
-            # No pretrained model provided.
+            # No pretrained model is provided.
             print(f"[ProteinNet Finetuning] No pretrained model found: Learn from the scratch.")
         else:
-            # Pretrained model provided.
+            # Pretrained model is provided.
             print(f"[ProteinNet Finetuning] Import pretrained model: {self.pConfig['finetune']['pretrained_model_dir']}")
             mGraphEmb.from_pretrained(self.pConfig['finetune']['pretrained_model_dir'])
             mGraphEnc.from_pretrained(self.pConfig['finetune']['pretrained_model_dir'])
@@ -125,11 +126,17 @@ class ProteinNet_finetune(object):
         
         # Perform Finetuning.
         print("[ProteinNet Finetuning] Finetuning Begins.")
-        pBestValAcc = 0.0
+        pBestValAcc, pBestLoss = 0.0, 1e+8
         pBestMetrics = []
         pMetrics = []
         for pEpochCounter in range(self.pConfig['finetune']['epochs']):
-            if self.pTask == "HomologyTAPE":
+            if self.pTask == "dna":
+                pMetrics = self._NormEpoch_(mGraphEmb, mGraphEnc, pTrainLoader, None, [pTest129Loader, pTest181Loader], pOptimizer, pEpochCounter)
+                print(f"[ProteinNet] Epoch: {pEpochCounter+1} Accuracy | Train={pMetrics[0]['Acc']:.3f}, Test129={pMetrics[1]['Acc']:.3f}, Test181={pMetrics[2]['Acc']:.3f}")
+            elif self.pTask == "atp":
+                pMetrics = self._NormEpoch_(mGraphEmb, mGraphEnc, pTrainLoader, None, [pTestLoader], pOptimizer, pEpochCounter)
+                print(f"[ProteinNet] Epoch: {pEpochCounter+1} Accuracy | Train={pMetrics[0]['Acc']:.3f}, Test={pMetrics[1]['Acc']:.3f}")
+            elif self.pTask == "HomologyTAPE":
                 pMetrics = self._NormEpoch_(mGraphEmb, mGraphEnc, pTrainLoader, pValidLoader, [pTestFoldLoader, pTestSuperfamilyLoader, pTestFamilyLoader], pOptimizer, pEpochCounter)
                 print(f"[ProteinNet] Epoch: {pEpochCounter+1} Accuracy | Train={pMetrics[0]['Acc']:.3f}, Val={pMetrics[1]['Acc']:.3f}, TestFold={pMetrics[2]['Acc']:.3f}, TestSuperFamily={pMetrics[3]['Acc']:.3f}, TestFamily={pMetrics[4]['Acc']:.3f}")
             elif self.pTask == "ProtFunct":
@@ -160,7 +167,11 @@ class ProteinNet_finetune(object):
                 with open(pCurConfigDir, 'wb') as f:
                     pickle.dump(self.pConfig, f)
         
-        if self.pTask == "HomologyTAPE":
+        if self.pTask == "dna":
+            print(f"[ProteinNet] Best Accuracy | Train={pBestMetrics[0]['Acc']:.3f}, Test129={pBestMetrics[1]['Acc']:.3f}, Test181={pBestMetrics[2]['Acc']:.3f}")
+        elif self.pTask == "atp":
+            print(f"[ProteinNet] Best Accuracy | Train={pBestMetrics[0]['Acc']:.3f}, Test={pBestMetrics[1]['Acc']:.3f}")
+        elif self.pTask == "HomologyTAPE":
             print(f"[ProteinNet] Best Accuracy | Train={pBestMetrics[0]['Acc']:.3f}, Val={pBestMetrics[1]['Acc']:.3f}, TestFold={pBestMetrics[2]['Acc']:.3f}, TestSuperFamily={pBestMetrics[3]['Acc']:.3f}, TestFamily={pBestMetrics[4]['Acc']:.3f}")
         elif self.pTask == "ProtFunct":
             print(f"[ProteinNet] Best Accuracy | Train={pBestMetrics[0]['Acc']:.3f}, Val={pBestMetrics[1]['Acc']:.3f}, Test={pBestMetrics[2]['Acc']:.3f}")
@@ -182,8 +193,9 @@ class ProteinNet_finetune(object):
         pTrainLoss, pTrainMetrics = self._train_(mGraphEmb, mGraphEnc, pTrainLoader, pOptimizer, pEpochCounter)
         
         # Evaluation Cycle.
-        # pTrainMetrics = self._eval_(mGraphEmb, mGraphEnc, pTrainLoader, pEpochCounter) # Skip this for efficiency.
-        pValidMetrics = self._eval_(mGraphEmb, mGraphEnc, pValidLoader, pEpochCounter)
+        pTrainMetrics = self._eval_(mGraphEmb, mGraphEnc, pTrainLoader, pEpochCounter) # Skip this for efficiency.
+        if not pValidLoader == None:
+            pValidMetrics = self._eval_(mGraphEmb, mGraphEnc, pValidLoader, pEpochCounter)
         pMetrics = [pTrainMetrics, pValidMetrics]
 
         for pTestLoader in pTestLoaders:
@@ -268,7 +280,13 @@ def main():
     batch_size = int(config['finetune']['batch_size'])
     curTask = config['finetune']['task']
     
-    if curTask == "HomologyTAPE":
+    if curTask == "dna":
+        from datasets.dataset_dna import DNABindDatasetWrapper
+        dataset = DNABindDatasetWrapper(batch_size, **__data_config)
+    # elif curTask == "atp":
+    #     from datasets.dataset_atp import ProtClassProteinsDBDatasetWrapper
+    #     dataset = ProtClassProteinsDBDatasetWrapper(batch_size, **__data_config)
+    elif curTask == "HomologyTAPE":
         from datasets.dataset_HomologyTAPE import ProtClassHomologyTAPEDatasetWrapper
         dataset = ProtClassHomologyTAPEDatasetWrapper(batch_size, **__data_config)
     elif curTask == "ProteinsDB":

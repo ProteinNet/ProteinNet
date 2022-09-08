@@ -4,23 +4,23 @@ seed: 0
 dataset: mane
 num_workers: 8
 batch_size: 32                          # batch size
-graph_encoder_type: GAT             # GNN backbone (GCN, GAT, SAGE, GIN)
+graph_encoder_type: GAT                 # GNN backbone (GCN, GAT, SAGE, GIN)
 
 warm_up: 10                             # warm-up epochs
 epochs: 100                             # total number of epochs
 init_lr: 0.0001                         # initial learning rate for Adam (default=0.0005)
 weight_decay: 1e-5                      # weight decay for Adam
-log_every_n_steps: 10                    # print training log frequency
+log_every_n_steps: 10                   # print training log frequency
 gpu: cuda:0                             # training GPU 
+
+embed: 
+  init_node_dim: 8                      # Initial Node Embedding Dimension.
+  init_edge_dim: 4                      # Initial Edge Embedding Dimension.
 
 graph_encoder: 
   num_layers: 5                         # number of graph conv layers
-  node_dim: 8                          # Initial Node Embedding Dimension.
-  edge_dim: 4                           # Initial Edge Embedding Dimension.
   hidden_dim: 32                        # Hidden Node Dimension.
-  drop_ratio: 0                         # Dropout Ratio.
-  pool_ratio: 0.7
-  sum_res: True
+  drop_ratio: 0.0                       # Dropout Ratio.
 
 loss:
   temperature: 1.0                      # temperature of NT-Xent loss
