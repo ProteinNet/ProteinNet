@@ -70,9 +70,9 @@ class DNABindDatasetWrapper(object):
         self.pTAPE = pTAPE
 
     def get_data_loaders(self):
-        train_dataset    = DNABindDataset(pDataSplit='train',    pDataPath=self.pDataPath, pTAPE=self.pTAPE)
-        test_129_dataset = DNABindDataset(pDataSplit='test_129', pDataPath=self.pDataPath, pTAPE=self.pTAPE)
-        test_181_dataset = DNABindDataset(pDataSplit='test_181', pDataPath=self.pDataPath, pTAPE=self.pTAPE)
+        train_dataset    = DNABindDataset(pDataPath=self.pDataPath, pTAPE=self.pTAPE)
+        test_129_dataset = DNABindDataset(pDataPath=self.pDataPath, pTAPE=self.pTAPE)
+        test_181_dataset = DNABindDataset(pDataPath=self.pDataPath, pTAPE=self.pTAPE)
         
 
         train_loader        = DataLoader(train_dataset, batch_size = self.batch_size,    sampler=SubsetRandomSampler(list(range(len(train_dataset)))), 
