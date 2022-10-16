@@ -138,7 +138,7 @@ class GATEnc(torch.nn.Module):
     r"""The graph attentional operator from the `"Graph Attention Networks"
     <https://arxiv.org/abs/1710.10903>`_ paper
     """
-    def __init__(self, pNumLayers, pDim, pHDim, pEdgeHDim, pDropRatio, pNumLabels, pHeads=2, pPoolRatio=0.0, pSumRes=True, pRetEmb=False, pGraphPred=False):
+    def __init__(self, pNumLayers, pDim, pHDim, pDropRatio, pNumLabels, pHeads=2, pPoolRatio=0.0, pSumRes=True, pRetEmb=False, pGraphPred=False):
         super(GATEnc, self).__init__()
         
         convLayers = []
@@ -158,6 +158,8 @@ class GATEnc(torch.nn.Module):
         self.readout = Sequential('x, batch, edge_index', readoutLayers)
 
     def forward(self, x, edge_index, edge_weight, batch):
+        if edge_index.dtype != torch.long: edge_index = edge_index.to(torch.long)
+        print(edge_index.shape)
         x = self.convolution(x, edge_index)#, edge_weight)
         pred = self.readout(x, batch, edge_index)
         return pred
