@@ -10,14 +10,14 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch_geometric.nn import Sequential, BatchNorm, GraphNorm, GCNConv, SAGEConv, GATConv, GINConv, global_mean_pool, SAGPooling, global_max_pool, global_add_pool
-from utils import get_atom_feature_dims, get_bond_feature_dims
-from modules import GraphMultisetTransformer, spspmm
-from utils.graph_util import dense_to_sparse, to_dense_adj
+from torch_geometric.nn import Sequential, BatchNorm, GraphNorm, GCNConv, SAGEConv, GATConv, GINConv, global_mean_pool, SAGPooling, global_max_pool, global_add_pool, GraphMultisetTransformer
+from preprocess.ogb_util import get_atom_feature_dims, get_bond_feature_dims
+#from modules import GraphMultisetTransformer, spspmm
+from preprocess.pyg_util import dense_to_sparse, to_dense_adj
 
 # Packages for graph U net.
 # from torch_sparse import spspmm
-from utils import TopKPooling
+#from utils import TopKPooling
 from torch_geometric.utils import (
     add_self_loops,
     remove_self_loops,

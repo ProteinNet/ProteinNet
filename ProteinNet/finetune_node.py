@@ -6,13 +6,16 @@ Copyright (c) ProteinNet Team.
 Finetuning pretrained protein encoder for node classification tasks.
 '''
 
+#import sys
+#sys.apth.append('/')
+
 import os
 import yaml
 import pickle
 import argparse
 import numpy as np
 from tqdm import tqdm
-from utils import set_seed
+from utils.seed import set_seed
 import torch
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from sklearn.metrics import accuracy_score, f1_score, average_precision_score, roc_auc_score
