@@ -196,7 +196,7 @@ class ProteinNet_finetune(object):
         pTrainMetrics = self._eval_(mGraphEmb, mGraphEnc, pTrainLoader, pEpochCounter) # Skip this for efficiency.
         if not pValidLoader == None:
             pValidMetrics = self._eval_(mGraphEmb, mGraphEnc, pValidLoader, pEpochCounter)
-        pMetrics = [pTrainMetrics, pValidMetrics]
+            pMetrics = [pTrainMetrics, pValidMetrics]
 
         for pTestLoader in pTestLoaders:
             pTestMetrics = self._eval_(mGraphEmb, mGraphEnc, pTestLoader, pEpochCounter)
