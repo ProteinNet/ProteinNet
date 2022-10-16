@@ -10,14 +10,14 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch_geometric.nn import Sequential, BatchNorm, GraphNorm, GCNConv, SAGEConv, GATConv, GINConv, global_mean_pool, SAGPooling, global_max_pool, global_add_pool
-from utils import get_atom_feature_dims, get_bond_feature_dims
-from modules import GraphMultisetTransformer, spspmm
-from utils.graph_util import dense_to_sparse, to_dense_adj
+from torch_geometric.nn import Sequential, BatchNorm, GraphNorm, GCNConv, SAGEConv, GATConv, GINConv, global_mean_pool, SAGPooling, global_max_pool, global_add_pool, GraphMultisetTransformer
+from preprocess.ogb_util import get_atom_feature_dims, get_bond_feature_dims
+#from modules import GraphMultisetTransformer, spspmm
+from preprocess.pyg_util import dense_to_sparse, to_dense_adj
 
 # Packages for graph U net.
 # from torch_sparse import spspmm
-from utils import TopKPooling
+#from utils import TopKPooling
 from torch_geometric.utils import (
     add_self_loops,
     remove_self_loops,
@@ -138,7 +138,7 @@ class GATEnc(torch.nn.Module):
     r"""The graph attentional operator from the `"Graph Attention Networks"
     <https://arxiv.org/abs/1710.10903>`_ paper
     """
-    def __init__(self, pNumLayers, pDim, pHDim, pEdgeHDim, pDropRatio, pNumLabels, pHeads=2, pPoolRatio=0.0, pSumRes=True, pRetEmb=False, pGraphPred=False):
+    def __init__(self, pNumLayers, pDim, pHDim, pDropRatio, pNumLabels, pHeads=2, pPoolRatio=0.0, pSumRes=True, pRetEmb=False, pGraphPred=False):
         super(GATEnc, self).__init__()
         
         convLayers = []
@@ -158,6 +158,8 @@ class GATEnc(torch.nn.Module):
         self.readout = Sequential('x, batch, edge_index', readoutLayers)
 
     def forward(self, x, edge_index, edge_weight, batch):
+        if edge_index.dtype != torch.long: edge_index = edge_index.to(torch.long)
+        print(edge_index.shape)
         x = self.convolution(x, edge_index)#, edge_weight)
         pred = self.readout(x, batch, edge_index)
         return pred

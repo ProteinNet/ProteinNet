@@ -6,13 +6,16 @@ Copyright (c) ProteinNet Team.
 Finetuning pretrained protein encoder for node classification tasks.
 '''
 
+#import sys
+#sys.apth.append('/')
+
 import os
 import yaml
 import pickle
 import argparse
 import numpy as np
 from tqdm import tqdm
-from utils import set_seed
+from utils.seed import set_seed
 import torch
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from sklearn.metrics import accuracy_score, f1_score, average_precision_score, roc_auc_score
@@ -69,7 +72,7 @@ class ProteinNet_finetune(object):
         self.criterion = torch.nn.CrossEntropyLoss()
         if self.pTask == "dna":
             pTrainLoader, pTest129Loader, pTest181Loader = self.pDataset.get_data_loaders()
-            pNumLabels = 2
+            pNumLabels = 24 # 2
         elif self.pTask == "atp":
             pTrainLoader, pTestLoader = self.pDataset.get_data_loaders()
             pNumLabels = 2
@@ -89,7 +92,7 @@ class ProteinNet_finetune(object):
         pEmbConfig = self.pConfig['embed']
         pGraphConfig = self.pConfig['graph_encoder']
 
-        pGraphEmbParam = {"pDimNodeEmb": pEmbConfig['init_node_dim'], "pDimEdgeEmb": pEmbConfig['init_edge_dim']}
+        pGraphEmbParam = {"pDimNodeHidden": pEmbConfig['init_node_dim'], "pDimEdgeHidden": pEmbConfig['init_edge_dim']}
         pGraphEncParam = {"pNumLayers": pGraphConfig['num_layers'], "pDim": pEmbConfig['init_node_dim'],
                           "pHDim": pGraphConfig['hidden_dim'], "pDropRatio": pGraphConfig['drop_ratio'], "pNumLabels":pNumLabels}
         from models.GraphEncoder import GraphEmb
@@ -196,7 +199,7 @@ class ProteinNet_finetune(object):
         pTrainMetrics = self._eval_(mGraphEmb, mGraphEnc, pTrainLoader, pEpochCounter) # Skip this for efficiency.
         if not pValidLoader == None:
             pValidMetrics = self._eval_(mGraphEmb, mGraphEnc, pValidLoader, pEpochCounter)
-        pMetrics = [pTrainMetrics, pValidMetrics]
+            pMetrics = [pTrainMetrics, pValidMetrics]
 
         for pTestLoader in pTestLoaders:
             pTestMetrics = self._eval_(mGraphEmb, mGraphEnc, pTestLoader, pEpochCounter)
