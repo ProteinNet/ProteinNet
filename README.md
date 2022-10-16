@@ -6,6 +6,9 @@ Please make sure that your code "Should be executable" without any kind of bugs,
 
 The following will explain how to begin your project.
 
+## Executing Pretraining Network.
+    # current dir: ProteinNet/ProteinNet
+    $ python3 -m finetune_node --config eTest
 
 ## Data Download and Preprocessing.
 ### Pretraining: MANE
