@@ -69,7 +69,7 @@ class ProteinNet_finetune(object):
         self.criterion = torch.nn.CrossEntropyLoss()
         if self.pTask == "dna":
             pTrainLoader, pTest129Loader, pTest181Loader = self.pDataset.get_data_loaders()
-            pNumLabels = 2
+            pNumLabels = 24 # 2
         elif self.pTask == "atp":
             pTrainLoader, pTestLoader = self.pDataset.get_data_loaders()
             pNumLabels = 2
