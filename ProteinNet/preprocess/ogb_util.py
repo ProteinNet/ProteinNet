@@ -10,7 +10,7 @@ Reference: https://github.com/snap-stanford/ogb
 import torch
 from torch_geometric.data import Data
 import numpy as np
-from features import allowable_features, allowable_noncovalent_features
+from ProteinNet.ProteinNet.preprocess.features import allowable_features, allowable_noncovalent_features
 
 def get_atom_feature_dims():
     return list(map(len, [
