@@ -5,7 +5,7 @@ from threading import Thread
 __version__ = '0.0.1'
 
 try: 
-    os.envirion['OUTDATED_IGNORE'] = '1'
+    os.environ['OUTDATED_IGNORE'] = '1'
     from outdated import check_outdated
 except ImportError:
     check_outdated = None
