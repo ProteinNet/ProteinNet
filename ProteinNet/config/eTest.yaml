@@ -32,7 +32,7 @@ finetune:
   batch_size: 64
   isTAPE: False                         # Use TAPE encoding or not.
   num_workers: 8
-  pretrained_model_dir: results/T1
+  pretrained_model_dir: None
   output_model_dir : None               # Should make 'None' to save pretrain.
   init_lr: 0.001
   weight_decay: 1e-5
