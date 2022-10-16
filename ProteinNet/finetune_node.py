@@ -92,7 +92,7 @@ class ProteinNet_finetune(object):
         pEmbConfig = self.pConfig['embed']
         pGraphConfig = self.pConfig['graph_encoder']
 
-        pGraphEmbParam = {"pDimNodeEmb": pEmbConfig['init_node_dim'], "pDimEdgeEmb": pEmbConfig['init_edge_dim']}
+        pGraphEmbParam = {"pDimNodeHidden": pEmbConfig['init_node_dim'], "pDimEdgeHidden": pEmbConfig['init_edge_dim']}
         pGraphEncParam = {"pNumLayers": pGraphConfig['num_layers'], "pDim": pEmbConfig['init_node_dim'],
                           "pHDim": pGraphConfig['hidden_dim'], "pDropRatio": pGraphConfig['drop_ratio'], "pNumLabels":pNumLabels}
         from models.GraphEncoder import GraphEmb
